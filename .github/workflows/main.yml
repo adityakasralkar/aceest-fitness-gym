@@ -29,10 +29,3 @@ jobs:
         working-directory: backend
         run: |
           pytest tests/ -v
-```
-
-Then also add basics to `backend/requirements.txt`:
-```
-flask==3.0.0
-pytest==7.4.0
-python-dotenv==1.0.0
