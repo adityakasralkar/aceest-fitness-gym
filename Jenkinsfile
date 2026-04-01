@@ -35,6 +35,7 @@ pipeline {
         }
 
         stage('Docker Build') {
+            agent any
             steps {
                 echo 'Building Docker image...'
                 sh '''
