@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     stages {
         stage('Checkout') {
@@ -16,7 +11,6 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing Python dependencies...'
                 sh '''
                     cd backend
                     pip install -r requirements.txt
@@ -26,7 +20,6 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                echo 'Running Pytest...'
                 sh '''
                     cd backend
                     python -m pytest tests/ -v
@@ -35,22 +28,9 @@ pipeline {
         }
 
         stage('Docker Build') {
-            agent any
             steps {
-                echo 'Building Docker image...'
-                sh '''
-                    docker build -t aceest-backend ./backend
-                '''
+                sh 'docker build -t aceest-backend ./backend'
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'BUILD SUCCESSFUL - All stages passed!'
-        }
-        failure {
-            echo 'BUILD FAILED - Check logs above'
         }
     }
 }
