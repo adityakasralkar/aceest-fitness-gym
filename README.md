@@ -11,10 +11,12 @@
 | Layer | Technology |
 |-------|-----------|
 | Backend | Flask 3.0, Python 3.11 |
-| Database | SQLite (dev) / PostgreSQL (prod) |
+| Database | PostgreSQL |
 | ORM | SQLAlchemy |
+| Authentication | JWT, Flask-Bcrypt |
+| Rate Limiting | Flask-Limiter |
 | Testing | Pytest |
-| Containerization | Docker |
+| Containerization | Docker & Docker Compose |
 | CI/CD | GitHub Actions + Jenkins |
 | Version Control | Git / GitHub |
 
@@ -28,6 +30,7 @@ aceest-fitness-gym/
 │   │   ├── __init__.py
 │   │   ├── config.py
 │   │   ├── routes/
+│   │   │   ├── auth.py
 │   │   │   ├── clients.py
 │   │   │   └── programs.py
 │   │   ├── models/
@@ -35,6 +38,7 @@ aceest-fitness-gym/
 │   │   └── services/
 │   │       └── calculator.py
 │   ├── tests/
+│   │   ├── test_auth.py
 │   │   ├── test_calculator.py
 │   │   └── test_clients.py
 │   ├── app.py
@@ -85,6 +89,15 @@ API runs at `http://localhost:5000`
 
 ## API Endpoints
 
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | User login |
+| POST | `/api/auth/refresh` | Refresh access token |
+| GET | `/api/auth/me` | Get current user info |
+| POST | `/api/auth/logout` | Logout user |
+
 ### Programs
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -116,21 +129,23 @@ cd backend
 python -m pytest tests/ -v
 ```
 
-14 tests covering calculator logic and client API endpoints.
+18 tests covering authentication, calculator logic, and client API endpoints.
 
 ---
 
 ## Docker
 ```bash
-# Build
-docker build -t aceest-backend ./backend
-
-# Run
-docker run -p 5000:5000 -e DATABASE_URL=sqlite:///aceest.db aceest-backend
-
-# Run with PostgreSQL
+# Start both database and backend with a single command
 docker-compose up --build
+
+# Or run in background
+docker-compose up -d --build
+
+# Stop services
+docker-compose down
 ```
+
+The application will be available at `http://localhost:5000` with PostgreSQL database running on `localhost:5432`.
 
 ---
 
