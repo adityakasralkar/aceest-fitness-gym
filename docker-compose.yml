@@ -10,12 +10,12 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=sqlite:///aceest.db
+      - DATABASE_URL=postgresql://aceest_user:aceest_password@db:5432/aceest
       - SECRET_KEY=dev-secret-key
-    volumes:
-      - ./backend:/app
+      - JWT_SECRET_KEY=jwt-secret-key
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   db:
@@ -29,6 +29,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aceest_user -d aceest"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
 volumes:
