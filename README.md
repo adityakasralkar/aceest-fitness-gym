@@ -145,7 +145,7 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-The application will be available at `http://localhost:5000` with PostgreSQL database running on `localhost:5432`.
+The application will be available at `http://localhost:5001` with PostgreSQL database running on `localhost:5432`.
 
 ---
 
