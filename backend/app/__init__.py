@@ -1,98 +1,47 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
-from app import db
-from app.models.database import Workout, Client
-from datetime import date
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from app.config import config
+import os
 
-workouts_bp = Blueprint("workouts", __name__)
-
-
-@workouts_bp.route("/<string:client_name>", methods=["GET"])
-@jwt_required()
-def get_workouts(client_name):
-    client = Client.query.filter_by(name=client_name).first()
-    if not client:
-        return jsonify({"error": "Client not found"}), 404
-
-    workouts = Workout.query.filter_by(client_name=client_name).all()
-    return jsonify([w.to_dict() for w in workouts]), 200
+db = SQLAlchemy()
+bcrypt = Bcrypt()
+jwt = JWTManager()
+limiter = Limiter(key_func=get_remote_address)
 
 
-@workouts_bp.route("/<string:client_name>", methods=["POST"])
-@jwt_required()
-def add_workout(client_name):
-    client = Client.query.filter_by(name=client_name).first()
-    if not client:
-        return jsonify({"error": "Client not found"}), 404
+def create_app(config_name=None):
+    if config_name is None:
+        config_name = os.getenv("FLASK_ENV", "development")
 
-    data = request.get_json()
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
 
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+    db.init_app(app)
+    bcrypt.init_app(app)
+    jwt.init_app(app)
+    limiter.init_app(app)
 
-    required = ["workout_type", "duration_min"]
-    for field in required:
-        if field not in data:
-            return jsonify({"error": f"{field} is required"}), 400
+    from app.routes.clients import clients_bp
+    from app.routes.programs import programs_bp
+    from app.routes.auth import auth_bp
+    from app.routes.workouts import workouts_bp
+    from app.routes.progress import progress_bp
+    from app.routes.membership import membership_bp
+    from app.routes.metrics import metrics_bp
 
-    valid_types = ["Strength", "Hypertrophy", "Cardio", "Mobility", "HIIT"]
-    if data["workout_type"] not in valid_types:
-        return jsonify({"error": f"workout_type must be one of {valid_types}"}), 400
+    app.register_blueprint(clients_bp, url_prefix="/api/clients")
+    app.register_blueprint(programs_bp, url_prefix="/api/programs")
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(workouts_bp, url_prefix="/api/workouts")
+    app.register_blueprint(progress_bp, url_prefix="/api/progress")
+    app.register_blueprint(membership_bp, url_prefix="/api/membership")
+    app.register_blueprint(metrics_bp, url_prefix="/api/metrics")
 
-    if not isinstance(data["duration_min"], int) or data["duration_min"] <= 0:
-        return jsonify({"error": "duration_min must be a positive integer"}), 400
+    with app.app_context():
+        db.create_all()
 
-    workout = Workout(
-        client_name=client_name,
-        date=data.get("date", date.today().isoformat()),
-        workout_type=data["workout_type"],
-        duration_min=data["duration_min"],
-        notes=data.get("notes", "")
-    )
-
-    db.session.add(workout)
-    db.session.commit()
-
-    return jsonify(workout.to_dict()), 201
-
-
-@workouts_bp.route("/<string:client_name>/<int:workout_id>", methods=["PUT"])
-@jwt_required()
-def update_workout(client_name, workout_id):
-    workout = Workout.query.filter_by(
-        id=workout_id,
-        client_name=client_name
-    ).first()
-
-    if not workout:
-        return jsonify({"error": "Workout not found"}), 404
-
-    data = request.get_json()
-
-    if "workout_type" in data:
-        workout.workout_type = data["workout_type"]
-    if "duration_min" in data:
-        workout.duration_min = data["duration_min"]
-    if "notes" in data:
-        workout.notes = data["notes"]
-    if "date" in data:
-        workout.date = data["date"]
-
-    db.session.commit()
-    return jsonify(workout.to_dict()), 200
-
-
-@workouts_bp.route("/<string:client_name>/<int:workout_id>", methods=["DELETE"])
-@jwt_required()
-def delete_workout(client_name, workout_id):
-    workout = Workout.query.filter_by(
-        id=workout_id,
-        client_name=client_name
-    ).first()
-
-    if not workout:
-        return jsonify({"error": "Workout not found"}), 404
-
-    db.session.delete(workout)
-    db.session.commit()
-    return jsonify({"message": "Workout deleted"}), 200
+    return app
