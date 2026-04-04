@@ -70,6 +70,8 @@ cd aceest-fitness-gym
 ### 2. Install Dependencies
 ```bash
 cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
@@ -126,6 +128,7 @@ curl -X POST http://localhost:5000/api/clients/ \
 ## Running Tests
 ```bash
 cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 python -m pytest tests/ -v
 ```
 
@@ -145,7 +148,7 @@ docker-compose up -d --build
 docker-compose down
 ```
 
-The application will be available at `http://localhost:5000` with PostgreSQL database running on `localhost:5432`.
+The application will be available at `http://localhost:5001` with PostgreSQL database running on `localhost:5432`.
 
 ---
 
