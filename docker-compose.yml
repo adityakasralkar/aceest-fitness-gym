@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: aceest-backend
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - FLASK_ENV=development
       - DATABASE_URL=postgresql://aceest_user:aceest_password@db:5432/aceest

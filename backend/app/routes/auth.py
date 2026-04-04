@@ -4,7 +4,6 @@ from flask_jwt_extended import (
     create_refresh_token,
     jwt_required,
     get_jwt_identity,
-    get_jwt
 )
 from app import db, bcrypt, limiter
 from app.models.database import User
@@ -34,31 +33,31 @@ def register():
     if existing:
         return jsonify({"error": "Username already exists"}), 409
 
-    hashed_password = bcrypt.generate_password_hash(
-        data["password"]
-    ).decode("utf-8")
+    hashed_password = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
 
     user = User(
-        username=data["username"],
-        password=hashed_password,
-        role=data.get("role", "Trainer")
+        username=data["username"], password=hashed_password, role=data.get("role", "Trainer")
     )
 
     db.session.add(user)
     db.session.commit()
 
     access_token = create_access_token(
-        identity=user.username,
-        additional_claims={"role": user.role}
+        identity=user.username, additional_claims={"role": user.role}
     )
     refresh_token = create_refresh_token(identity=user.username)
 
-    return jsonify({
-        "message": "User registered successfully",
-        "user": user.to_dict(),
-        "access_token": access_token,
-        "refresh_token": refresh_token
-    }), 201
+    return (
+        jsonify(
+            {
+                "message": "User registered successfully",
+                "user": user.to_dict(),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
+        ),
+        201,
+    )
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -78,17 +77,21 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
     access_token = create_access_token(
-        identity=user.username,
-        additional_claims={"role": user.role}
+        identity=user.username, additional_claims={"role": user.role}
     )
     refresh_token = create_refresh_token(identity=user.username)
 
-    return jsonify({
-        "message": "Login successful",
-        "user": user.to_dict(),
-        "access_token": access_token,
-        "refresh_token": refresh_token
-    }), 200
+    return (
+        jsonify(
+            {
+                "message": "Login successful",
+                "user": user.to_dict(),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
+        ),
+        200,
+    )
 
 
 @auth_bp.route("/refresh", methods=["POST"])
@@ -96,15 +99,8 @@ def login():
 def refresh():
     identity = get_jwt_identity()
     user = User.query.filter_by(username=identity).first()
-    
-    access_token = create_access_token(
-        identity=identity,
-        additional_claims={"role": user.role}
-    )
-    
-    return jsonify({
-        "access_token": access_token
-    }), 200
+    access_token = create_access_token(identity=identity, additional_claims={"role": user.role})
+    return jsonify({"access_token": access_token}), 200
 
 
 @auth_bp.route("/me", methods=["GET"])
@@ -112,10 +108,8 @@ def refresh():
 def me():
     identity = get_jwt_identity()
     user = User.query.filter_by(username=identity).first()
-
     if not user:
         return jsonify({"error": "User not found"}), 404
-
     return jsonify(user.to_dict()), 200
 
 

@@ -1,26 +1,30 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from app import db
 from app.models.database import Client
 from app.services.calculator import calculate_calories
 
 clients_bp = Blueprint("clients", __name__)
 
-# GET all clients
+
 @clients_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_clients():
     clients = Client.query.all()
     return jsonify([c.to_dict() for c in clients]), 200
 
-# GET single client
+
 @clients_bp.route("/<string:name>", methods=["GET"])
+@jwt_required()
 def get_client(name):
     client = Client.query.filter_by(name=name).first()
     if not client:
         return jsonify({"error": "Client not found"}), 404
     return jsonify(client.to_dict()), 200
 
-# POST create client
+
 @clients_bp.route("/", methods=["POST"])
+@jwt_required()
 def create_client():
     data = request.get_json()
 
@@ -45,17 +49,21 @@ def create_client():
         name=data["name"],
         age=data["age"],
         weight=data["weight"],
+        height=data.get("height"),
         program=data["program"],
-        calories=calories
+        calories=calories,
+        target_weight=data.get("target_weight"),
+        membership_status=data.get("membership_status", "Active"),
+        membership_end=data.get("membership_end"),
     )
 
     db.session.add(client)
     db.session.commit()
-
     return jsonify(client.to_dict()), 201
 
-# PUT update client
+
 @clients_bp.route("/<string:name>", methods=["PUT"])
+@jwt_required()
 def update_client(name):
     client = Client.query.filter_by(name=name).first()
     if not client:
@@ -67,6 +75,10 @@ def update_client(name):
         client.weight = data["weight"]
     if "age" in data:
         client.age = data["age"]
+    if "height" in data:
+        client.height = data["height"]
+    if "target_weight" in data:
+        client.target_weight = data["target_weight"]
     if "program" in data:
         client.program = data["program"]
         client.calories = calculate_calories(client.weight, data["program"])
@@ -74,8 +86,9 @@ def update_client(name):
     db.session.commit()
     return jsonify(client.to_dict()), 200
 
-# DELETE client
+
 @clients_bp.route("/<string:name>", methods=["DELETE"])
+@jwt_required()
 def delete_client(name):
     client = Client.query.filter_by(name=name).first()
     if not client:

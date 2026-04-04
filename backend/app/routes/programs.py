@@ -3,11 +3,13 @@ from app.services.calculator import get_all_programs, get_program, calculate_cal
 
 programs_bp = Blueprint("programs", __name__)
 
+
 # GET all programs
 @programs_bp.route("/", methods=["GET"])
 def get_programs():
     programs = get_all_programs()
     return jsonify(programs), 200
+
 
 # GET single program
 @programs_bp.route("/<string:name>", methods=["GET"])
@@ -17,6 +19,7 @@ def get_single_program(name):
         return jsonify(program), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
+
 
 # POST calculate calories
 @programs_bp.route("/calculate", methods=["POST"])
@@ -31,10 +34,9 @@ def calculate():
 
     try:
         calories = calculate_calories(data["weight"], data["program"])
-        return jsonify({
-            "weight": data["weight"],
-            "program": data["program"],
-            "calories": calories
-        }), 200
+        return (
+            jsonify({"weight": data["weight"], "program": data["program"], "calories": calories}),
+            200,
+        )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

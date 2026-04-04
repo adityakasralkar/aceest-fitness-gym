@@ -33,4 +33,27 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            echo 'Pipeline finished (Success or Failure)'
+            cleanWs()  // cleans workspace after build
+        }
+
+        success {
+            echo 'BUILD SUCCESSFUL - All stages passed!'
+        }
+
+        failure {
+            echo 'BUILD FAILED - Check logs above'
+        }
+
+        unstable {
+            echo 'BUILD UNSTABLE - Some tests may have failed'
+        }
+
+        aborted {
+            echo 'BUILD ABORTED - Manually stopped or interrupted'
+        }
+    }
 }
