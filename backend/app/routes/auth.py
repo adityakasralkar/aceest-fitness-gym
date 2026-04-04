@@ -3,8 +3,7 @@ from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     jwt_required,
-    get_jwt_identity,
-    get_jwt
+    get_jwt_identity
 )
 from app import db, bcrypt, limiter
 from app.models.database import User
@@ -96,15 +95,11 @@ def login():
 def refresh():
     identity = get_jwt_identity()
     user = User.query.filter_by(username=identity).first()
-    
     access_token = create_access_token(
         identity=identity,
         additional_claims={"role": user.role}
     )
-    
-    return jsonify({
-        "access_token": access_token
-    }), 200
+    return jsonify({"access_token": access_token}), 200
 
 
 @auth_bp.route("/me", methods=["GET"])
@@ -112,10 +107,8 @@ def refresh():
 def me():
     identity = get_jwt_identity()
     user = User.query.filter_by(username=identity).first()
-
     if not user:
         return jsonify({"error": "User not found"}), 404
-
     return jsonify(user.to_dict()), 200
 
 

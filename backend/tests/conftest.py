@@ -1,5 +1,7 @@
 import pytest
 from app import create_app, db
+from flask_jwt_extended import create_access_token
+
 
 @pytest.fixture(scope="session")
 def app():
@@ -9,9 +11,21 @@ def app():
         yield app
         db.drop_all()
 
+
 @pytest.fixture(scope="session")
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture(scope="session")
+def auth_token(app):
+    with app.app_context():
+        token = create_access_token(
+            identity="testuser",
+            additional_claims={"role": "Admin"}
+        )
+        return token
+
 
 @pytest.fixture(autouse=True)
 def clean_db(app):
