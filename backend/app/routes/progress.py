@@ -38,7 +38,7 @@ def add_progress(client_name):
     progress = Progress(
         client_name=client_name,
         week=data.get("week", datetime.now().strftime("Week %U - %Y")),
-        adherence=data["adherence"]
+        adherence=data["adherence"],
     )
 
     db.session.add(progress)
@@ -49,9 +49,7 @@ def add_progress(client_name):
 @progress_bp.route("/<string:client_name>/<int:progress_id>", methods=["DELETE"])
 @jwt_required()
 def delete_progress(client_name, progress_id):
-    progress = Progress.query.filter_by(
-        id=progress_id, client_name=client_name
-    ).first()
+    progress = Progress.query.filter_by(id=progress_id, client_name=client_name).first()
 
     if not progress:
         return jsonify({"error": "Progress record not found"}), 404

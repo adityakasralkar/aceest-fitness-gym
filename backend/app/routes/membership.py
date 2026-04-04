@@ -14,11 +14,16 @@ def get_membership(client_name):
     if not client:
         return jsonify({"error": "Client not found"}), 404
 
-    return jsonify({
-        "client_name": client_name,
-        "membership_status": client.membership_status,
-        "membership_end": client.membership_end
-    }), 200
+    return (
+        jsonify(
+            {
+                "client_name": client_name,
+                "membership_status": client.membership_status,
+                "membership_end": client.membership_end,
+            }
+        ),
+        200,
+    )
 
 
 @membership_bp.route("/<string:client_name>/renew", methods=["POST"])
@@ -40,12 +45,17 @@ def renew_membership(client_name):
 
     db.session.commit()
 
-    return jsonify({
-        "message": f"Membership renewed for {months} month(s)",
-        "client_name": client_name,
-        "membership_status": client.membership_status,
-        "membership_end": client.membership_end
-    }), 200
+    return (
+        jsonify(
+            {
+                "message": f"Membership renewed for {months} month(s)",
+                "client_name": client_name,
+                "membership_status": client.membership_status,
+                "membership_end": client.membership_end,
+            }
+        ),
+        200,
+    )
 
 
 @membership_bp.route("/<string:client_name>/cancel", methods=["POST"])
@@ -58,8 +68,13 @@ def cancel_membership(client_name):
     client.membership_status = "Cancelled"
     db.session.commit()
 
-    return jsonify({
-        "message": "Membership cancelled",
-        "client_name": client_name,
-        "membership_status": client.membership_status
-    }), 200
+    return (
+        jsonify(
+            {
+                "message": "Membership cancelled",
+                "client_name": client_name,
+                "membership_status": client.membership_status,
+            }
+        ),
+        200,
+    )

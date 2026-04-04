@@ -46,7 +46,7 @@ def add_workout(client_name):
         date=data.get("date", date.today().isoformat()),
         workout_type=data["workout_type"],
         duration_min=data["duration_min"],
-        notes=data.get("notes", "")
+        notes=data.get("notes", ""),
     )
 
     db.session.add(workout)
@@ -57,9 +57,7 @@ def add_workout(client_name):
 @workouts_bp.route("/<string:client_name>/<int:workout_id>", methods=["PUT"])
 @jwt_required()
 def update_workout(client_name, workout_id):
-    workout = Workout.query.filter_by(
-        id=workout_id, client_name=client_name
-    ).first()
+    workout = Workout.query.filter_by(id=workout_id, client_name=client_name).first()
 
     if not workout:
         return jsonify({"error": "Workout not found"}), 404
@@ -82,9 +80,7 @@ def update_workout(client_name, workout_id):
 @workouts_bp.route("/<string:client_name>/<int:workout_id>", methods=["DELETE"])
 @jwt_required()
 def delete_workout(client_name, workout_id):
-    workout = Workout.query.filter_by(
-        id=workout_id, client_name=client_name
-    ).first()
+    workout = Workout.query.filter_by(id=workout_id, client_name=client_name).first()
 
     if not workout:
         return jsonify({"error": "Workout not found"}), 404

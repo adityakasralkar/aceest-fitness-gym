@@ -20,10 +20,7 @@ def client(app):
 @pytest.fixture(scope="session")
 def auth_token(app):
     with app.app_context():
-        token = create_access_token(
-            identity="testuser",
-            additional_claims={"role": "Admin"}
-        )
+        token = create_access_token(identity="testuser", additional_claims={"role": "Admin"})
         return token
 
 
