@@ -40,7 +40,7 @@ def add_metric(client_name):
         date=data.get("date", date.today().isoformat()),
         weight=data.get("weight"),
         waist=data.get("waist"),
-        bodyfat=data.get("bodyfat")
+        bodyfat=data.get("bodyfat"),
     )
 
     db.session.add(metric)
@@ -51,9 +51,7 @@ def add_metric(client_name):
 @metrics_bp.route("/<string:client_name>/<int:metric_id>", methods=["DELETE"])
 @jwt_required()
 def delete_metric(client_name, metric_id):
-    metric = Metric.query.filter_by(
-        id=metric_id, client_name=client_name
-    ).first()
+    metric = Metric.query.filter_by(id=metric_id, client_name=client_name).first()
 
     if not metric:
         return jsonify({"error": "Metric not found"}), 404

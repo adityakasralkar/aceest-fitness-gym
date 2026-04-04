@@ -16,7 +16,7 @@ class User(db.Model):
             "id": self.id,
             "username": self.username,
             "role": self.role,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }
 
 
@@ -51,7 +51,7 @@ class Client(db.Model):
             "target_weight": self.target_weight,
             "membership_status": self.membership_status,
             "membership_end": self.membership_end,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }
 
 
@@ -72,7 +72,7 @@ class Workout(db.Model):
             "date": self.date,
             "workout_type": self.workout_type,
             "duration_min": self.duration_min,
-            "notes": self.notes
+            "notes": self.notes,
         }
 
 
@@ -89,7 +89,7 @@ class Progress(db.Model):
             "id": self.id,
             "client_name": self.client_name,
             "week": self.week,
-            "adherence": self.adherence
+            "adherence": self.adherence,
         }
 
 
@@ -110,5 +110,5 @@ class Metric(db.Model):
             "date": self.date,
             "weight": self.weight,
             "waist": self.waist,
-            "bodyfat": self.bodyfat
+            "bodyfat": self.bodyfat,
         }

@@ -54,7 +54,7 @@ def create_client():
         calories=calories,
         target_weight=data.get("target_weight"),
         membership_status=data.get("membership_status", "Active"),
-        membership_end=data.get("membership_end")
+        membership_end=data.get("membership_end"),
     )
 
     db.session.add(client)
