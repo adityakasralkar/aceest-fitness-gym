@@ -70,6 +70,8 @@ cd aceest-fitness-gym
 ### 2. Install Dependencies
 ```bash
 cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
@@ -126,6 +128,7 @@ curl -X POST http://localhost:5000/api/clients/ \
 ## Running Tests
 ```bash
 cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 python -m pytest tests/ -v
 ```
 
