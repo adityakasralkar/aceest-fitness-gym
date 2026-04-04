@@ -13,7 +13,6 @@ def get_workouts(client_name):
     client = Client.query.filter_by(name=client_name).first()
     if not client:
         return jsonify({"error": "Client not found"}), 404
-
     workouts = Workout.query.filter_by(client_name=client_name).all()
     return jsonify([w.to_dict() for w in workouts]), 200
 
@@ -52,7 +51,6 @@ def add_workout(client_name):
 
     db.session.add(workout)
     db.session.commit()
-
     return jsonify(workout.to_dict()), 201
 
 
@@ -60,8 +58,7 @@ def add_workout(client_name):
 @jwt_required()
 def update_workout(client_name, workout_id):
     workout = Workout.query.filter_by(
-        id=workout_id,
-        client_name=client_name
+        id=workout_id, client_name=client_name
     ).first()
 
     if not workout:
@@ -86,8 +83,7 @@ def update_workout(client_name, workout_id):
 @jwt_required()
 def delete_workout(client_name, workout_id):
     workout = Workout.query.filter_by(
-        id=workout_id,
-        client_name=client_name
+        id=workout_id, client_name=client_name
     ).first()
 
     if not workout:
