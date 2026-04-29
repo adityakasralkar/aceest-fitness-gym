@@ -10,6 +10,8 @@ services:
       - "5001:5000"
     environment:
       - FLASK_ENV=development
+      - APP_VERSION=compose-local
+      - DEPLOYMENT_VARIANT=compose
       - DATABASE_URL=postgresql://aceest_user:aceest_password@db:5432/aceest
       - SECRET_KEY=dev-secret-key
       - JWT_SECRET_KEY=jwt-secret-key
