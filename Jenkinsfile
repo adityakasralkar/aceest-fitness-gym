@@ -58,50 +58,31 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    docker run --rm \
-                        -v "${WORKSPACE}/backend:/app" \
-                        -w /app \
-                        python:3.11-slim \
-                        sh -c "
-                            pip install --no-cache-dir --upgrade pip &&
-                            pip install --no-cache-dir -r requirements.txt
-                        "
-                '''
+                dir('backend') {
+                    sh 'python3 -m pip install --break-system-packages --upgrade pip'
+                    sh 'python3 -m pip install --break-system-packages -r requirements.txt'
+                }
             }
         }
 
         stage('Lint') {
             steps {
-                sh '''
-                    docker run --rm \
-                        -v "${WORKSPACE}/backend:/app" \
-                        -w /app \
-                        python:3.11-slim \
-                        sh -c "
-                            pip install --no-cache-dir -r requirements.txt &&
-                            python -m black --check . &&
-                            python -m flake8 .
-                        "
-                '''
+                dir('backend') {
+                    sh 'python3 -m black --check .'
+                    sh 'python3 -m flake8 .'
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
                 sh '''
-                    docker run --rm \
-                        -v "${WORKSPACE}/backend:/app" \
-                        -w /app \
-                        python:3.11-slim \
-                        sh -c "
-                            pip install --no-cache-dir -r requirements.txt &&
-                            mkdir -p reports &&
-                            python -m pytest tests/ -v \
-                                --junitxml=reports/pytest.xml \
-                                --cov=app \
-                                --cov-report=xml:reports/coverage.xml
-                        "
+                    cd backend
+                    mkdir -p reports
+                    python -m pytest tests/ -v \
+                        --junitxml=reports/pytest.xml \
+                        --cov=app \
+                        --cov-report=xml:reports/coverage.xml
                 '''
             }
             post {
