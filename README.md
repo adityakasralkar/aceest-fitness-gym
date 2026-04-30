@@ -245,6 +245,7 @@ feature/cicd-k8s
 ```
 
 Jenkins auto-trigger validation note: push a small commit to `feature/cicd-k8s` and wait 2-3 minutes for SCM polling.
+Current workflow reminder: `feature/* -> dev -> main`.
 
 Docker Hub image:
 ```bash
