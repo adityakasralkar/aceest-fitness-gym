@@ -162,7 +162,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 python -m pytest tests/ -v
 ```
 
-18 tests covering authentication, calculator logic, and client API endpoints.
+37 tests covering health checks, authentication, calculator logic, and API endpoints.
 
 ---
 
@@ -234,6 +234,88 @@ main     ← production-ready (GitHub Actions + Jenkins)
 dev      ← integration branch (GitHub Actions)
 feature/ ← individual features
 ```
+
+---
+
+## CI/CD and Kubernetes Extension
+
+Current extension branch:
+```bash
+feature/cicd-k8s
+```
+
+Jenkins auto-trigger validation note: push a small commit to `feature/cicd-k8s` and wait 2-3 minutes for SCM polling.
+
+Docker Hub image:
+```bash
+adityakasralkar/aceest-fitness-gym
+```
+
+### Health Check
+```bash
+curl http://localhost:5000/health
+```
+
+Example response:
+```json
+{
+  "status": "ok",
+  "service": "aceest-fitness-gym",
+  "environment": "production",
+  "version": "latest",
+  "deployment_variant": "stable"
+}
+```
+
+### Docker Smoke Test
+```bash
+docker build \
+  --build-arg APP_VERSION=local-smoke \
+  --build-arg DEPLOYMENT_VARIANT=docker-smoke \
+  -t adityakasralkar/aceest-fitness-gym:local-smoke \
+  ./backend
+
+docker run --rm -d \
+  --name aceest-smoke \
+  -p 5050:5000 \
+  -e FLASK_ENV=testing \
+  -e APP_VERSION=local-smoke \
+  -e DEPLOYMENT_VARIANT=docker-smoke \
+  adityakasralkar/aceest-fitness-gym:local-smoke
+
+curl http://127.0.0.1:5050/health
+docker rm -f aceest-smoke
+```
+
+### Jenkins VM Jobs
+Create these Jenkins **Pipeline from SCM** jobs:
+
+| Job | Branch |
+|-----|--------|
+| `aceest-cicd-feature` | `*/feature/cicd-k8s` |
+| `aceest-dev` | `*/dev` |
+
+The Jenkinsfile includes `pollSCM('H/2 * * * *')`, so Jenkins automatically checks GitHub about every 2 minutes even when GitHub webhooks cannot reach the college VM.
+
+### Optional Tooling Phases
+```bash
+# Start SonarQube with Docker
+docker compose -f docker-compose.sonar.yml up -d
+
+# Start Minikube with Docker driver
+minikube start --driver=docker --memory=4096 --cpus=2
+minikube addons enable ingress
+kubectl get nodes
+
+# Quick Kubernetes deploy test
+kubectl create namespace aceest
+kubectl -n aceest create deployment aceest-backend --image=adityakasralkar/aceest-fitness-gym:latest
+kubectl -n aceest expose deployment aceest-backend --port=80 --target-port=5000
+kubectl -n aceest port-forward service/aceest-backend 8080:80
+```
+
+Detailed setup:
+- [Step-by-step execution guide](docs/step-by-step-execution.md)
 
 ---
 

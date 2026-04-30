@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+.DS_Store
 
 # C extensions
 *.so
@@ -208,3 +209,4 @@ __marimo__/
 backend/.env
 backend/*.db
 backend/aceest.db
+backend/reports/
