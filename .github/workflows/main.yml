@@ -2,9 +2,9 @@ name: ACEest CI/CD Pipeline
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, feature/cicd-k8s]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   lint:
@@ -57,7 +57,7 @@ jobs:
       - name: Run Pytest
         working-directory: backend
         run: |
-          python -m pytest tests/ -v
+          python -m pytest tests/ -v --cov=app --cov-report=xml
 
   docker-build:
     runs-on: ubuntu-latest
@@ -69,12 +69,17 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t aceest-backend ./backend
+          docker build \
+            --build-arg APP_VERSION="${GITHUB_SHA::8}" \
+            --build-arg DEPLOYMENT_VARIANT="github-actions" \
+            -t aceest-backend ./backend
 
       - name: Run tests inside Docker
         run: |
           docker run --rm \
             -e DATABASE_URL=sqlite:///aceest.db \
             -e FLASK_ENV=testing \
+            -e APP_VERSION="${GITHUB_SHA::8}" \
+            -e DEPLOYMENT_VARIANT=github-actions \
             aceest-backend \
             python -m pytest tests/ -v

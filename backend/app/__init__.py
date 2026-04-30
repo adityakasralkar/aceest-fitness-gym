@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -5,7 +7,6 @@ from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from app.config import config
-import os
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -19,12 +20,14 @@ def create_app(config_name=None):
 
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.config["ENVIRONMENT"] = config_name
 
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
     limiter.init_app(app)
 
+    from app.routes.health import health_bp
     from app.routes.clients import clients_bp
     from app.routes.programs import programs_bp
     from app.routes.auth import auth_bp
@@ -33,6 +36,7 @@ def create_app(config_name=None):
     from app.routes.membership import membership_bp
     from app.routes.metrics import metrics_bp
 
+    app.register_blueprint(health_bp)
     app.register_blueprint(clients_bp, url_prefix="/api/clients")
     app.register_blueprint(programs_bp, url_prefix="/api/programs")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
