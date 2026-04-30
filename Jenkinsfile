@@ -59,8 +59,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    sh 'python3 -m pip install --upgrade pip'
-                    sh 'python3 -m pip install -r requirements.txt'
+                    sh 'python3 -m pip install --break-system-packages --upgrade pip'
+                    sh 'python3 -m pip install --break-system-packages -r requirements.txt'
                 }
             }
         }
