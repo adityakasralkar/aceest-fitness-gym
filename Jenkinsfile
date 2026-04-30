@@ -79,7 +79,7 @@ pipeline {
                 sh '''
                     cd backend
                     mkdir -p reports
-                    python -m pytest tests/ -v \
+                    python3 -m pytest tests/ -v \
                         --junitxml=reports/pytest.xml \
                         --cov=app \
                         --cov-report=xml:reports/coverage.xml
