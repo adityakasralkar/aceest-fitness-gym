@@ -18,9 +18,10 @@ PROGRAMS = {
 
 
 def calculate_calories(weight: float, program: str) -> int:
-    if program not in PROGRAMS:
-        raise ValueError(f"Invalid program: {program}")
-    return int(weight * PROGRAMS[program]["factor"])
+    # Match programs case-insensitively and fall back to the safe Beginner plan.
+    factors = {name.lower(): info["factor"] for name, info in PROGRAMS.items()}
+    factor = factors.get(program.lower(), PROGRAMS["Beginner (BG)"]["factor"])
+    return round(weight * factor)
 
 
 def get_all_programs() -> dict:
