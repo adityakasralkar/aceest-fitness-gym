@@ -48,4 +48,9 @@ def create_app(config_name=None):
     with app.app_context():
         db.create_all()
 
+    # Send errors and metrics to AIDevOps (only if AIDEVOPS_API_KEY is set).
+    from app.otel import init_monitoring
+
+    init_monitoring(app)
+
     return app
