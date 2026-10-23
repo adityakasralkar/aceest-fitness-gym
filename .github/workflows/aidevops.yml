@@ -1,0 +1,86 @@
+# AIDevOps CI: on every push, lint, test and security-scan the backend, then
+# report the result to the AIDevOps monitoring server. A failed check blocks
+# the push from being deployed and is reported to AIDevOps as CRITICAL.
+#
+# Runs on a self-hosted runner (label "aidevops") on the machine where
+# AIDevOps runs, so the report can reach it. Triggered only by pushes from
+# people with write access, never by pull requests from forks.
+name: AIDevOps CI
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aidevops-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: [self-hosted, aidevops]
+    timeout-minutes: 20
+    env:
+      CI_LOG_DIR: ${{ github.workspace }}/ci-logs
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare log folder
+        run: mkdir -p "$CI_LOG_DIR"
+
+      - name: Install dependencies
+        id: install
+        run: |
+          set -o pipefail
+          { python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt pip-audit; } 2>&1 | tee "$CI_LOG_DIR/install.log"
+
+      - name: Lint (flake8)
+        id: lint
+        run: |
+          set -o pipefail
+          .venv/bin/flake8 . --exclude .venv 2>&1 | tee "$CI_LOG_DIR/lint.log"
+
+      - name: Format check (black)
+        id: format
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          .venv/bin/black --check . --exclude '\.venv' 2>&1 | tee "$CI_LOG_DIR/format.log"
+
+      - name: Tests (pytest)
+        id: tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          .venv/bin/python -m pytest tests -q -p no:cacheprovider 2>&1 | tee "$CI_LOG_DIR/tests.log"
+
+      - name: "Security: secret scan"
+        id: secret_scan
+        if: ${{ !cancelled() }}
+        working-directory: .
+        run: |
+          set -o pipefail
+          .github/scripts/secret-scan.sh 2>&1 | tee "$CI_LOG_DIR/secret_scan.log"
+
+      - name: "Security: vulnerable dependencies"
+        id: dependency_audit
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          .venv/bin/pip-audit -r requirements.txt --progress-spinner off 2>&1 | tee "$CI_LOG_DIR/dependency_audit.log"
+
+      - name: Report to AIDevOps
+        if: ${{ always() }}
+        working-directory: .
+        env:
+          AIDEVOPS_URL: ${{ secrets.AIDEVOPS_URL }}
+          AIDEVOPS_API_KEY: ${{ secrets.AIDEVOPS_API_KEY }}
+          STEPS_JSON: ${{ toJSON(steps) }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: python3 .github/scripts/report_to_aidevops.py

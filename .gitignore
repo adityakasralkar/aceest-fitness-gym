@@ -210,3 +210,6 @@ backend/.env
 backend/*.db
 backend/aceest.db
 backend/reports/
+
+# CI step logs
+ci-logs/
