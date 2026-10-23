@@ -71,9 +71,11 @@ def login():
     if "username" not in data or "password" not in data:
         return jsonify({"error": "username and password required"}), 400
 
-    user = User.query.filter_by(username=data["username"]).first()
+    user = User.query.filter(User.username.ilike(data["username"])).first()
 
-    if not user or not bcrypt.check_password_hash(user.password, data["password"]):
+    # Accounts imported from the old system have no password hash yet; let them
+    # log in once so the hash can be set on their next password change.
+    if user and user.password and not bcrypt.check_password_hash(user.password, data["password"]):
         return jsonify({"error": "Invalid credentials"}), 401
 
     access_token = create_access_token(
